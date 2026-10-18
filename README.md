@@ -74,3 +74,16 @@ python3 -m http.server 8000   # e abra http://localhost:8000
 ## Privacidade
 
 O repositório é público (exigência do GitHub Pages gratuito), mas as respostas ficam apenas na planilha, que é privada. A página tem `noindex` para não aparecer em buscadores.
+
+## Fórmulas manuais do Resumo
+
+O `setup` escolhe sozinho entre fórmulas em inglês e em português. Se mesmo assim a aba **Resumo** der erro, digite estas fórmulas nas células B2 a B7 (planilhas em português usam `;` e os nomes em português):
+
+| Célula | Rótulo (coluna A) | Fórmula em português | Fórmula em inglês |
+|---|---|---|---|
+| B2 | Respostas "Sim" | `=CONT.SE(Respostas!C:C; "Sim")` | `=COUNTIF(Respostas!C:C, "Sim")` |
+| B3 | Respostas "Não" | `=CONT.SE(Respostas!C:C; "Não")` | `=COUNTIF(Respostas!C:C, "Não")` |
+| B4 | Adultos | `=SOMASE(Respostas!C:C; "Sim"; Respostas!D:D)` | `=SUMIF(Respostas!C:C, "Sim", Respostas!D:D)` |
+| B5 | Crianças 6–12 | `=SOMASE(Respostas!C:C; "Sim"; Respostas!E:E)` | `=SUMIF(Respostas!C:C, "Sim", Respostas!E:E)` |
+| B6 | Crianças 0–5 | `=SOMASE(Respostas!C:C; "Sim"; Respostas!F:F)` | `=SUMIF(Respostas!C:C, "Sim", Respostas!F:F)` |
+| B7 | TOTAL DE PESSOAS | `=SOMA(B4:B6)` | `=SUM(B4:B6)` |

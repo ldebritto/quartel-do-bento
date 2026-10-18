@@ -48,16 +48,16 @@ function setup() {
   // --- Resumo ---
   let s = ss.getSheetByName(ABA_RESUMO) || ss.insertSheet(ABA_RESUMO, 0);
   s.clear();
-  const linhas = [
-    ['Quartel do Bento · 07/11 às 15h', ''],
-    ['Respostas "Sim"', '=COUNTIF(Respostas!C2:C,"Sim")'],
-    ['Respostas "Não"', '=COUNTIF(Respostas!C2:C,"Não")'],
-    ['Adultos', '=SUMIF(Respostas!C2:C,"Sim",Respostas!D2:D)'],
-    ['Crianças 6–12', '=SUMIF(Respostas!C2:C,"Sim",Respostas!E2:E)'],
-    ['Crianças 0–5', '=SUMIF(Respostas!C2:C,"Sim",Respostas!F2:F)'],
-    ['TOTAL DE PESSOAS', '=SUM(B4:B6)']
-  ];
-  s.getRange(1, 1, linhas.length, 2).setValues(linhas);
+  s.getRange(1, 1, 7, 1).setValues([
+    ['Quartel do Bento · 07/11 às 15h'],
+    ['Respostas "Sim"'],
+    ['Respostas "Não"'],
+    ['Adultos'],
+    ['Crianças 6–12'],
+    ['Crianças 0–5'],
+    ['TOTAL DE PESSOAS']
+  ]);
+  definirFormulasResumo_(s);
   s.getRange('A1:B1').merge().setFontWeight('bold').setFontSize(14)
     .setBackground('#c8151b').setFontColor('#ffffff');
   s.getRange('A2:B7').setFontSize(13);
@@ -124,6 +124,46 @@ function doPost(e) {
   } finally {
     try { lock.releaseLock(); } catch (_) {}
   }
+}
+
+// ---------- fórmulas do Resumo (inglês ou português) ----------
+
+/**
+ * Planilhas em português usam CONT.SE/SOMASE/SOMA e ";" nas fórmulas; em inglês,
+ * COUNTIF/SUMIF/SUM e ",". Tenta a variante provável pelo idioma da planilha e,
+ * se alguma célula der erro, tenta a outra.
+ */
+function definirFormulasResumo_(s) {
+  const loc = String(SpreadsheetApp.getActiveSpreadsheet().getSpreadsheetLocale() || '');
+  const ordem = /^pt/i.test(loc) ? ['pt', 'en'] : ['en', 'pt'];
+
+  for (const variante of ordem) {
+    const formulas = formulasResumo_(variante);
+    let aceitas = true;
+    for (let i = 0; i < formulas.length; i++) {
+      try {
+        s.getRange(2 + i, 2).setFormula(formulas[i]); // B2..B7
+      } catch (e) { aceitas = false; break; }
+    }
+    if (!aceitas) continue;
+    SpreadsheetApp.flush();
+    const exibido = s.getRange(2, 2, formulas.length, 1).getDisplayValues().map(l => String(l[0]));
+    if (!exibido.some(t => /^(#|Err)/i.test(t))) return variante;
+  }
+  throw new Error('Não consegui criar as fórmulas do Resumo neste idioma de planilha. ' +
+                  'Use a tabela "Fórmulas manuais" do README.');
+}
+
+function formulasResumo_(variante) {
+  const pt = variante === 'pt';
+  const sep = pt ? ';' : ',';
+  const contar = (rotulo) => pt
+    ? `=CONT.SE(Respostas!C:C${sep}"${rotulo}")`
+    : `=COUNTIF(Respostas!C:C${sep}"${rotulo}")`;
+  const somar = (col) => pt
+    ? `=SOMASE(Respostas!C:C${sep}"Sim"${sep}Respostas!${col}:${col})`
+    : `=SUMIF(Respostas!C:C${sep}"Sim"${sep}Respostas!${col}:${col})`;
+  return [contar('Sim'), contar('Não'), somar('D'), somar('E'), somar('F'), pt ? '=SOMA(B4:B6)' : '=SUM(B4:B6)'];
 }
 
 // ---------- utilitários ----------
