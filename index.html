@@ -1,0 +1,466 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Quartel do Bento · Confirme sua presença</title>
+<meta name="description" content="Bento está completando 3 anos! Sábado, 07/11, às 15h, no LIV Barra Funda. Confirme sua presença.">
+<meta name="theme-color" content="#c8151b">
+
+<!-- Prévia para WhatsApp / redes -->
+<meta property="og:type" content="website">
+<meta property="og:locale" content="pt_BR">
+<meta property="og:title" content="Quartel do Bento · Brigada 03">
+<meta property="og:description" content="Nosso pequeno herói está completando 3 anos! Sábado, 07/11, às 15h. Toque para confirmar sua presença.">
+<meta property="og:image" content="https://ldebritto.github.io/quartel-do-bento/assets/og.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:url" content="https://ldebritto.github.io/quartel-do-bento/">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="robots" content="noindex, nofollow">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    --red: #c8151b;
+    --red-dark: #9e0f14;
+    --yellow: #f2b33d;
+    --cream: #fbf6ec;
+    --ink: #1a1a1a;
+    --muted: #6b625a;
+    --line: #e6dccb;
+    --ok: #1f7a3d;
+    --radius: 18px;
+    --display: "Lilita One", "Arial Black", Impact, sans-serif;
+    --body: "Nunito", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    font-family: var(--body);
+    color: var(--ink);
+    background-color: var(--cream);
+    background-image:
+      linear-gradient(var(--line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--line) 1px, transparent 1px);
+    background-size: 28px 28px;
+    padding: 0 0 env(safe-area-inset-bottom);
+  }
+  .wrap { max-width: 480px; margin: 0 auto; padding: 16px 16px 40px; }
+
+  .invite {
+    display: block; width: 100%; height: auto;
+    border-radius: var(--radius);
+    box-shadow: 0 10px 30px rgba(120, 20, 20, .18);
+    border: 3px solid #fff;
+    background: #fff;
+  }
+  .cue {
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    margin: 18px auto 6px; padding: 12px 20px;
+    font-family: var(--display); font-size: 1.25rem; letter-spacing: .02em;
+    color: #fff; background: var(--red); border-radius: 999px;
+    text-decoration: none; width: fit-content;
+    box-shadow: 0 4px 0 var(--red-dark);
+  }
+  .cue:active { transform: translateY(2px); box-shadow: 0 2px 0 var(--red-dark); }
+
+  .card {
+    background: #fff; border-radius: var(--radius);
+    border: 2px solid var(--line);
+    padding: 22px 18px 20px; margin-top: 18px;
+    box-shadow: 0 6px 18px rgba(0,0,0,.06);
+  }
+  h2 {
+    font-family: var(--display); font-weight: 400;
+    font-size: 1.9rem; line-height: 1.05; margin: 0 0 4px; color: var(--red);
+  }
+  .sub { margin: 0 0 18px; color: var(--muted); font-size: .98rem; }
+
+  label.field, .legend { display: block; font-weight: 800; font-size: .95rem; margin: 0 0 6px; }
+  input[type=text], textarea {
+    width: 100%; font: inherit; font-size: 16px; /* evita zoom no iOS */
+    padding: 13px 14px; border: 2px solid var(--line); border-radius: 12px;
+    background: #fffdf9; color: var(--ink);
+  }
+  textarea { min-height: 96px; resize: vertical; }
+  input:focus, textarea:focus, button:focus-visible, a:focus-visible {
+    outline: 3px solid var(--yellow); outline-offset: 2px; border-color: var(--red);
+  }
+  .group { margin-bottom: 20px; }
+
+  /* Toggle Sim / Não */
+  .toggle {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 0;
+    border: 2px solid var(--line); border-radius: 14px; overflow: hidden; background: #fffdf9;
+  }
+  .toggle button {
+    font: inherit; font-weight: 800; font-size: 1.02rem;
+    padding: 15px 8px; min-height: 54px; border: 0; background: transparent; color: var(--muted);
+    cursor: pointer; transition: background .15s, color .15s;
+  }
+  .toggle button + button { border-left: 2px solid var(--line); }
+  .toggle button[aria-pressed=true].yes { background: var(--ok); color: #fff; }
+  .toggle button[aria-pressed=true].no  { background: var(--red); color: #fff; }
+
+  .panel { display: none; margin-top: 18px; }
+  .panel.open { display: block; animation: pop .22s ease-out; }
+  @keyframes pop { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
+
+  /* Contadores */
+  .counter {
+    display: flex; align-items: center; justify-content: space-between; gap: 10px;
+    padding: 12px 12px 12px 14px; margin-bottom: 10px;
+    border: 2px solid var(--line); border-radius: 14px; background: #fffdf9;
+  }
+  .counter .txt strong { display: block; font-size: 1.02rem; }
+  .counter .txt span { color: var(--muted); font-size: .85rem; }
+  .ctrl { display: flex; align-items: center; gap: 4px; }
+  .ctrl button {
+    width: 46px; height: 46px; border-radius: 50%; border: 0; cursor: pointer;
+    font-family: var(--display); font-size: 1.7rem; line-height: 1; padding: 0 0 3px;
+    color: #fff; background: var(--red); box-shadow: 0 3px 0 var(--red-dark);
+  }
+  .ctrl button:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--red-dark); }
+  .ctrl button:disabled { background: #d9cfc0; box-shadow: 0 3px 0 #bfb4a3; cursor: default; }
+  .ctrl output {
+    min-width: 40px; text-align: center; font-family: var(--display); font-size: 1.8rem;
+  }
+  .total { text-align: right; font-weight: 800; color: var(--muted); margin: 2px 2px 0; }
+  .total b { color: var(--red); }
+
+  .submit {
+    width: 100%; margin-top: 8px; font-family: var(--display); font-size: 1.4rem; letter-spacing: .02em;
+    color: #3a2a00; background: var(--yellow); border: 0; border-radius: 14px;
+    padding: 16px; min-height: 58px; cursor: pointer; box-shadow: 0 4px 0 #c88b12;
+  }
+  .submit:active { transform: translateY(2px); box-shadow: 0 2px 0 #c88b12; }
+  .submit:disabled { opacity: .6; cursor: default; }
+  .error { color: var(--red-dark); font-weight: 700; margin: 10px 0 0; min-height: 1.2em; }
+  .hp { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+
+  /* Tela de agradecimento */
+  #thanks { display: none; text-align: center; }
+  #thanks .badge { font-size: 3.2rem; line-height: 1; margin-bottom: 6px; }
+  #thanks p { margin: 6px 0; }
+  .summary { font-weight: 800; font-size: 1.05rem; }
+  .info {
+    text-align: left; margin: 16px 0; padding: 14px 16px; border-radius: 14px;
+    background: var(--cream); border: 2px dashed var(--yellow); line-height: 1.5;
+  }
+  .btn {
+    display: block; width: 100%; margin-top: 10px; padding: 14px; min-height: 52px;
+    font: inherit; font-weight: 800; font-size: 1rem; text-align: center; text-decoration: none;
+    border-radius: 14px; cursor: pointer; border: 2px solid var(--red); color: var(--red); background: #fff;
+  }
+  .btn.primary { background: var(--red); color: #fff; box-shadow: 0 4px 0 var(--red-dark); }
+  .btn.link { border-color: transparent; color: var(--muted); text-decoration: underline; font-weight: 700; }
+
+  footer { text-align: center; color: var(--muted); font-size: .85rem; margin-top: 22px; }
+</style>
+</head>
+<body>
+<main class="wrap">
+
+  <img class="invite" src="assets/convite.jpg" width="800" height="1200"
+       alt="Convite: Quartel do Bento, Brigada 03. Nosso pequeno herói está completando 3 anos! Sábado, 07/11, às 15h, no LIV Barra Funda, Salão de Festas Gourmet, Rua Tagipuru, 1060.">
+
+  <a class="cue" href="#rsvp">Confirmar presença <span aria-hidden="true">↓</span></a>
+
+  <section class="card" id="rsvp" aria-labelledby="rsvp-title">
+    <div id="formView">
+      <h2 id="rsvp-title">Confirme sua presença</h2>
+      <p class="sub">Leva um minutinho. Se algo mudar, é só abrir o link de novo e atualizar.</p>
+
+      <form id="form" novalidate autocomplete="off">
+        <div class="group">
+          <label class="field" for="nome">Seu nome</label>
+          <input type="text" id="nome" name="nome" maxlength="80" autocomplete="name"
+                 placeholder="Nome e sobrenome" required>
+        </div>
+
+        <div class="group">
+          <div class="legend" id="vai-label">Você vai ao quartel?</div>
+          <div class="toggle" role="group" aria-labelledby="vai-label">
+            <button type="button" class="yes" id="btnSim" aria-pressed="false">Sim, vou!</button>
+            <button type="button" class="no" id="btnNao" aria-pressed="false">Não poderei</button>
+          </div>
+        </div>
+
+        <!-- SIM: contadores -->
+        <div class="panel" id="panelSim">
+          <div class="legend">Quantas pessoas vão com você?</div>
+          <div class="counter" data-key="adultos">
+            <div class="txt"><strong>Adultos</strong><span>Contando você</span></div>
+            <div class="ctrl">
+              <button type="button" data-act="dec" aria-label="Menos um adulto">−</button>
+              <output aria-live="polite">0</output>
+              <button type="button" data-act="inc" aria-label="Mais um adulto">+</button>
+            </div>
+          </div>
+          <div class="counter" data-key="criancas6a12">
+            <div class="txt"><strong>Crianças de 6 a 12 anos</strong><span>Até 12 anos completos</span></div>
+            <div class="ctrl">
+              <button type="button" data-act="dec" aria-label="Menos uma criança de 6 a 12 anos">−</button>
+              <output aria-live="polite">0</output>
+              <button type="button" data-act="inc" aria-label="Mais uma criança de 6 a 12 anos">+</button>
+            </div>
+          </div>
+          <div class="counter" data-key="criancas0a5">
+            <div class="txt"><strong>Crianças de 0 a 5 anos</strong><span>Até 5 anos completos</span></div>
+            <div class="ctrl">
+              <button type="button" data-act="dec" aria-label="Menos uma criança de 0 a 5 anos">−</button>
+              <output aria-live="polite">0</output>
+              <button type="button" data-act="inc" aria-label="Mais uma criança de 0 a 5 anos">+</button>
+            </div>
+          </div>
+          <div class="total" id="total" aria-live="polite">Total: <b>0</b> pessoas</div>
+
+          <div class="group" style="margin-top:16px">
+            <label class="field" for="msgSim">Recado para o Bento (opcional)</label>
+            <textarea id="msgSim" maxlength="500" placeholder="Alguma observação? Restrição alimentar, por exemplo."></textarea>
+          </div>
+        </div>
+
+        <!-- NÃO: mensagem -->
+        <div class="panel" id="panelNao">
+          <div class="group">
+            <label class="field" for="msgNao">Deixe uma mensagem para o Bento</label>
+            <textarea id="msgNao" maxlength="500" placeholder="Sentiremos sua falta! Escreva um recadinho."></textarea>
+          </div>
+        </div>
+
+        <div class="hp" aria-hidden="true">
+          <label>Não preencha <input type="text" id="hp" tabindex="-1" autocomplete="off"></label>
+        </div>
+
+        <button class="submit" id="submit" type="submit" style="display:none">Enviar resposta</button>
+        <p class="error" id="error" role="alert"></p>
+      </form>
+    </div>
+
+    <div id="thanks" tabindex="-1">
+      <div class="badge" id="thanksIcon" aria-hidden="true">🚒</div>
+      <h2 id="thanksTitle">Resposta enviada!</h2>
+      <p class="summary" id="thanksSummary"></p>
+      <div class="info" id="thanksInfo">
+        <strong>Sábado, 07/11, às 15h</strong><br>
+        LIV Barra Funda · Salão de Festas Gourmet<br>
+        Rua Tagipuru, 1060 · São Paulo
+      </div>
+      <a class="btn primary" id="btnIcs" href="#" download="festa-do-bento.ics">Adicionar ao calendário</a>
+      <a class="btn" id="btnGcal" href="#" target="_blank" rel="noopener">Abrir no Google Agenda</a>
+      <a class="btn" id="btnMaps" href="#" target="_blank" rel="noopener">Ver no mapa</a>
+      <button class="btn link" id="btnEdit" type="button">Alterar minha resposta</button>
+    </div>
+  </section>
+
+  <footer>Quartel do Bento · Brigada 03 · 3 anos 🔥</footer>
+</main>
+
+<script>
+(() => {
+  'use strict';
+
+  // ====== CONFIGURAÇÃO ======================================================
+  // Cole aqui a URL do Apps Script (termina em /exec). Veja o README.
+  const APPS_SCRIPT_URL = '';
+  const MAX_POR_CATEGORIA = 15;
+  const EVENTO = {
+    titulo: 'Aniversário de 3 anos do Bento – Quartel do Bento',
+    local: 'LIV Barra Funda, Rua Tagipuru, 1060, São Paulo - SP',
+    inicio: '20261107T150000',
+    fim: '20261107T180000',
+    tz: 'America/Sao_Paulo',
+    descricao: 'Brigada 03: festa de 3 anos do Bento. Salão de Festas Gourmet.'
+  };
+  // ==========================================================================
+
+  const $ = (s, r = document) => r.querySelector(s);
+  const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+  const STORE = 'quartel-bento-resposta';
+
+  const state = { vai: null, adultos: 0, criancas6a12: 0, criancas0a5: 0 };
+
+  const el = {
+    form: $('#form'), nome: $('#nome'), btnSim: $('#btnSim'), btnNao: $('#btnNao'),
+    panelSim: $('#panelSim'), panelNao: $('#panelNao'),
+    msgSim: $('#msgSim'), msgNao: $('#msgNao'), total: $('#total'),
+    submit: $('#submit'), error: $('#error'), hp: $('#hp'),
+    formView: $('#formView'), thanks: $('#thanks')
+  };
+
+  const total = () => state.adultos + state.criancas6a12 + state.criancas0a5;
+  const plural = (n, s, p) => `${n} ${n === 1 ? s : p}`;
+
+  function render() {
+    $$('.counter').forEach(c => {
+      const k = c.dataset.key, v = state[k];
+      $('output', c).textContent = v;
+      $('[data-act=dec]', c).disabled = v <= 0;
+      $('[data-act=inc]', c).disabled = v >= MAX_POR_CATEGORIA;
+    });
+    const t = total();
+    el.total.innerHTML = `Total: <b>${t}</b> ${t === 1 ? 'pessoa' : 'pessoas'}`;
+    el.btnSim.setAttribute('aria-pressed', state.vai === 'Sim');
+    el.btnNao.setAttribute('aria-pressed', state.vai === 'Não');
+    el.panelSim.classList.toggle('open', state.vai === 'Sim');
+    el.panelNao.classList.toggle('open', state.vai === 'Não');
+    el.submit.style.display = state.vai ? 'block' : 'none';
+    el.submit.textContent = state.vai === 'Sim' ? 'Confirmar presença' : 'Enviar mensagem';
+  }
+
+  function setVai(v) { state.vai = v; el.error.textContent = ''; render(); }
+  el.btnSim.addEventListener('click', () => setVai('Sim'));
+  el.btnNao.addEventListener('click', () => setVai('Não'));
+
+  $$('.counter').forEach(c => {
+    c.addEventListener('click', e => {
+      const b = e.target.closest('button[data-act]');
+      if (!b) return;
+      const k = c.dataset.key;
+      const d = b.dataset.act === 'inc' ? 1 : -1;
+      state[k] = Math.min(MAX_POR_CATEGORIA, Math.max(0, state[k] + d));
+      el.error.textContent = '';
+      render();
+    });
+  });
+
+  function validar() {
+    const nome = el.nome.value.trim().replace(/\s+/g, ' ');
+    if (nome.length < 2) return { erro: 'Por favor, escreva seu nome.', foco: el.nome };
+    if (!state.vai) return { erro: 'Escolha “Sim, vou!” ou “Não poderei”.' };
+    if (state.vai === 'Sim' && total() < 1)
+      return { erro: 'Indique pelo menos uma pessoa nos contadores.' };
+    return { nome };
+  }
+
+  async function enviar(payload) {
+    if (!APPS_SCRIPT_URL) {
+      // Modo de teste: sem backend configurado, apenas simula o envio.
+      console.info('[modo de teste] payload:', payload);
+      await new Promise(r => setTimeout(r, 500));
+      return { ok: true, simulado: true };
+    }
+    const ctl = new AbortController();
+    const to = setTimeout(() => ctl.abort(), 20000);
+    try {
+      // text/plain evita o preflight CORS, que o Apps Script não responde.
+      const res = await fetch(APPS_SCRIPT_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify(payload),
+        signal: ctl.signal
+      });
+      const data = await res.json();
+      if (!data.ok) throw new Error(data.erro || 'Falha ao salvar');
+      return data;
+    } finally { clearTimeout(to); }
+  }
+
+  el.form.addEventListener('submit', async e => {
+    e.preventDefault();
+    el.error.textContent = '';
+    const v = validar();
+    if (v.erro) { el.error.textContent = v.erro; if (v.foco) v.foco.focus(); return; }
+
+    const sim = state.vai === 'Sim';
+    const payload = {
+      nome: v.nome,
+      vai: state.vai,
+      adultos: sim ? state.adultos : 0,
+      criancas_6_12: sim ? state.criancas6a12 : 0,
+      criancas_0_5: sim ? state.criancas0a5 : 0,
+      mensagem: (sim ? el.msgSim.value : el.msgNao.value).trim(),
+      hp: el.hp.value
+    };
+
+    el.submit.disabled = true;
+    const rotulo = el.submit.textContent;
+    el.submit.textContent = 'Enviando…';
+    try {
+      await enviar(payload);
+      try { localStorage.setItem(STORE, JSON.stringify({ ...payload, ...state, nome: v.nome })); } catch (_) {}
+      mostrarObrigado(payload);
+    } catch (err) {
+      console.error(err);
+      el.error.textContent = 'Não consegui enviar agora. Verifique a conexão e toque de novo; sua resposta não será duplicada.';
+    } finally {
+      el.submit.disabled = false;
+      el.submit.textContent = rotulo;
+    }
+  });
+
+  function mostrarObrigado(p) {
+    const sim = p.vai === 'Sim';
+    const primeiro = p.nome.split(' ')[0];
+    $('#thanksIcon').textContent = sim ? '🚒' : '💌';
+    $('#thanksTitle').textContent = sim ? `Presença confirmada, ${primeiro}!` : `Obrigado, ${primeiro}!`;
+    if (sim) {
+      const partes = [];
+      if (p.adultos) partes.push(plural(p.adultos, 'adulto', 'adultos'));
+      if (p.criancas_6_12) partes.push(plural(p.criancas_6_12, 'criança de 6 a 12', 'crianças de 6 a 12'));
+      if (p.criancas_0_5) partes.push(plural(p.criancas_0_5, 'criança de 0 a 5', 'crianças de 0 a 5'));
+      $('#thanksSummary').textContent = 'Anotamos: ' + partes.join(', ') + '.';
+    } else {
+      $('#thanksSummary').textContent = 'Sentiremos sua falta, mas agradecemos o carinho. A mensagem chegou ao Bento!';
+    }
+    $('#thanksInfo').style.display = sim ? 'block' : 'none';
+    ['#btnIcs', '#btnGcal', '#btnMaps'].forEach(s => $(s).style.display = sim ? 'block' : 'none');
+    el.formView.style.display = 'none';
+    el.thanks.style.display = 'block';
+    el.thanks.focus({ preventScroll: true });
+    $('#rsvp').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  $('#btnEdit').addEventListener('click', () => {
+    el.thanks.style.display = 'none';
+    el.formView.style.display = 'block';
+    $('#rsvp').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+
+  // ====== Calendário ========================================================
+  const gcal = new URL('https://calendar.google.com/calendar/render');
+  gcal.search = new URLSearchParams({
+    action: 'TEMPLATE', text: EVENTO.titulo, dates: `${EVENTO.inicio}/${EVENTO.fim}`,
+    ctz: EVENTO.tz, location: EVENTO.local, details: EVENTO.descricao
+  }).toString();
+  $('#btnGcal').href = gcal.toString();
+  $('#btnMaps').href = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(EVENTO.local);
+
+  const ics = [
+    'BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Quartel do Bento//PT', 'CALSCALE:GREGORIAN',
+    'BEGIN:VEVENT',
+    'UID:quartel-do-bento-20261107@ldebritto.github.io',
+    'DTSTAMP:20261018T120000Z',
+    `DTSTART;TZID=${EVENTO.tz}:${EVENTO.inicio}`,
+    `DTEND;TZID=${EVENTO.tz}:${EVENTO.fim}`,
+    `SUMMARY:${EVENTO.titulo}`,
+    `LOCATION:${EVENTO.local.replace(/,/g, '\\,')}`,
+    `DESCRIPTION:${EVENTO.descricao}`,
+    'BEGIN:VALARM', 'TRIGGER:-PT2H', 'ACTION:DISPLAY', 'DESCRIPTION:Festa do Bento hoje!', 'END:VALARM',
+    'END:VEVENT', 'END:VCALENDAR'
+  ].join('\r\n');
+  $('#btnIcs').href = URL.createObjectURL(new Blob([ics], { type: 'text/calendar;charset=utf-8' }));
+
+  // ====== Reabrir com a resposta anterior (mesmo aparelho) ==================
+  try {
+    const salvo = JSON.parse(localStorage.getItem(STORE) || 'null');
+    if (salvo && salvo.nome) {
+      el.nome.value = salvo.nome;
+      state.vai = salvo.vai;
+      state.adultos = salvo.adultos || 0;
+      state.criancas6a12 = salvo.criancas_6_12 ?? salvo.criancas6a12 ?? 0;
+      state.criancas0a5 = salvo.criancas_0_5 ?? salvo.criancas0a5 ?? 0;
+      (salvo.vai === 'Sim' ? el.msgSim : el.msgNao).value = salvo.mensagem || '';
+    }
+  } catch (_) {}
+  render();
+})();
+</script>
+</body>
+</html>
