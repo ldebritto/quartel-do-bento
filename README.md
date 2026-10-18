@@ -56,13 +56,15 @@ Instale o app **Planilhas Google**, abra a planilha e fixe-a nos favoritos. Comp
 - **Layout**: no celular, uma coluna (convite e, abaixo, o formulário). Em tablet na horizontal e computador (telas a partir de 720 px), duas colunas: convite à esquerda, fixo ao rolar, e formulário à direita.
 - **Nome → Sim/Não**: "Sim" abre os três contadores (adultos, crianças de 6 a 12, crianças de 0 a 5); "Não" abre o campo de mensagem.
 - **Quem já respondeu** (guardado no aparelho, via `localStorage`, sem cookies) abre o link direto na tela de agradecimento, com resumo, data, endereço, calendário e mapa. Há botões para alterar a resposta ou responder por outra pessoa (celular compartilhado). Em outro aparelho ou navegador, a página volta a mostrar o formulário.
-- **Resposta repetida**: quem enviar de novo com o mesmo nome (sem diferenciar maiúsculas e acentos) *atualiza* a linha, sem duplicar.
+- **Resposta repetida e homônimos**: cada aparelho tem um código aleatório (guardado no navegador) que vai junto com a resposta. Só o mesmo código atualiza uma linha; **o nome nunca decide**. Duas pessoas com o mesmo nome viram duas linhas, ambas com o nome em laranja e "Nome repetido: conferir" na coluna **Atenção**. Se for a mesma pessoa que respondeu em dois aparelhos (por exemplo, no WhatsApp e no Safari), apague a linha mais antiga. O alerta é recalculado a cada resposta e quando você roda `setup` de novo (útil depois de apagar linhas). "Responder por outra pessoa" gera um código novo. Páginas antigas, sem código, sempre geram uma linha nova.
 - **Falha de rede**: se o envio falhar, a pessoa pode tentar de novo sem risco de duplicar.
 - **Agradecimento**: mostra o resumo, data, horário e endereço, com botões para o calendário (iPhone/Android), Google Agenda e mapa.
 
 ## Se você mudar o `Code.gs`
 
 Depois de editar o script, é preciso **Implantar → Gerenciar implantações → editar (lápis) → Versão: Nova versão → Implantar**. A URL continua a mesma.
+
+Se a mudança mexe nas colunas da planilha (como a que criou **id** e **Atenção**), rode também a função `setup` depois de colar o código. Ela é segura: não apaga respostas.
 
 ## Teste local
 

@@ -303,6 +303,23 @@
   const $ = (s, r = document) => r.querySelector(s);
   const $$ = (s, r = document) => [...r.querySelectorAll(s)];
   const STORE = 'quartel-bento-resposta';
+  const ID_KEY = 'quartel-bento-id';
+  const ID_OK = /^[A-Za-z0-9_-]{8,64}$/;
+  const novoId = () => {
+    const bruto = (window.crypto && crypto.randomUUID)
+      ? crypto.randomUUID()
+      : Array.from({ length: 3 }, () => Math.random().toString(36).slice(2)).join('');
+    return bruto.replace(/[^A-Za-z0-9_-]/g, '').slice(0, 64);
+  };
+  // Identifica este aparelho/navegador. É o que permite ao servidor diferenciar duas pessoas com
+  // o mesmo nome e atualizar (sem duplicar) quem reenvia a própria resposta.
+  let deviceId = (() => {
+    try {
+      let v = localStorage.getItem(ID_KEY);
+      if (!ID_OK.test(v || '')) { v = novoId(); localStorage.setItem(ID_KEY, v); }
+      return v;
+    } catch (_) { return novoId(); }
+  })();
 
   const state = { vai: null, adultos: 0, criancas6a12: 0, criancas0a5: 0 };
 
@@ -396,6 +413,7 @@
       criancas_6_12: sim ? state.criancas6a12 : 0,
       criancas_0_5: sim ? state.criancas0a5 : 0,
       mensagem: (sim ? el.msgSim.value : el.msgNao.value).trim(),
+      id: deviceId,
       hp: el.hp.value
     };
 
@@ -405,7 +423,7 @@
     try {
       await enviar(payload);
       try {
-        const { hp, ...guardar } = payload; // guarda só o que foi enviado, sem o campo-armadilha
+        const { hp, id, ...guardar } = payload; // sem o campo-armadilha e sem o id (fica em outra chave)
         localStorage.setItem(STORE, JSON.stringify(guardar));
       } catch (_) {}
       mostrarObrigado(payload);
@@ -455,6 +473,8 @@
   // Celular compartilhado (casal, por exemplo): limpa e deixa responder por outra pessoa.
   $('#btnOther').addEventListener('click', () => {
     try { localStorage.removeItem(STORE); } catch (_) {}
+    deviceId = novoId(); // outra pessoa = outra linha na planilha, mesmo com nome igual
+    try { localStorage.setItem(ID_KEY, deviceId); } catch (_) {}
     Object.assign(state, { vai: null, adultos: 0, criancas6a12: 0, criancas0a5: 0 });
     el.nome.value = ''; el.msgSim.value = ''; el.msgNao.value = '';
     el.error.textContent = '';

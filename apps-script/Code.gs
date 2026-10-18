@@ -5,6 +5,9 @@
  * valida os dados e grava (ou atualiza) uma linha na aba "Respostas".
  * A aba "Resumo" calcula os totais sozinha.
  *
+ * Homônimos: cada aparelho envia um "id" aleatório. Só o MESMO id atualiza uma linha;
+ * o nome nunca decide. Nomes iguais em linhas diferentes ficam marcados em "Atenção".
+ *
  * Como usar: veja o README.md do repositório.
  */
 
@@ -15,9 +18,11 @@ const MAX_POR_CATEGORIA = 15;
 
 const CABECALHO = [
   'Atualizado em', 'Nome', 'Vai?', 'Adultos',
-  'Crianças 6–12', 'Crianças 0–5', 'Total', 'Mensagem', 'chave'
+  'Crianças 6–12', 'Crianças 0–5', 'Total', 'Mensagem', 'chave', 'id', 'Atenção'
 ];
-const COL = { DATA: 1, NOME: 2, VAI: 3, ADULTOS: 4, C612: 5, C05: 6, TOTAL: 7, MSG: 8, CHAVE: 9 };
+const COL = { DATA: 1, NOME: 2, VAI: 3, ADULTOS: 4, C612: 5, C05: 6, TOTAL: 7, MSG: 8, CHAVE: 9, ID: 10, ATENCAO: 11 };
+const COR_ALERTA = '#ffd9a8';
+const RE_ID = /^[A-Za-z0-9_-]{8,64}$/;
 
 /** Rode UMA vez, manualmente, para montar as abas e autorizar o script. */
 function setup() {
@@ -35,15 +40,17 @@ function setup() {
   r.setColumnWidths(2, 1, 180);
   r.setColumnWidths(3, 5, 90);
   r.setColumnWidth(COL.MSG, 320);
-  r.hideColumns(COL.CHAVE);
-  // Cores por resposta
-  const faixa = r.getRange(2, COL.NOME, Math.max(1, r.getMaxRows() - 1), 2);
+  r.setColumnWidth(COL.ATENCAO, 190);
+  r.hideColumns(COL.CHAVE, 2); // "chave" e "id" são técnicas
+  // Cor por resposta, só na coluna "Vai?" (o nome fica livre para o alerta de repetição)
+  const faixa = r.getRange(2, COL.VAI, Math.max(1, r.getMaxRows() - 1), 1);
   r.setConditionalFormatRules([
     SpreadsheetApp.newConditionalFormatRule()
       .whenFormulaSatisfied('=$C2="Sim"').setBackground('#e3f4e8').setRanges([faixa]).build(),
     SpreadsheetApp.newConditionalFormatRule()
       .whenFormulaSatisfied('=$C2="Não"').setBackground('#fbe3e3').setRanges([faixa]).build()
   ]);
+  atualizarAlertas_(r); // rodar setup() de novo também atualiza os alertas (útil após apagar linhas)
 
   // --- Resumo ---
   let s = ss.getSheetByName(ABA_RESUMO) || ss.insertSheet(ABA_RESUMO, 0);
@@ -102,21 +109,26 @@ function doPost(e) {
     if (!aba) return json_({ ok: false, erro: 'Rode setup() antes' });
 
     const chave = chave_(nome);
+    const id = RE_ID.test(String(dados.id || '')) ? String(dados.id) : '';
     const agora = Utilities.formatDate(new Date(), FUSO, 'dd/MM/yyyy HH:mm');
-    const linha = [agora, protegido_(nome), vai, adultos, c612, c05, adultos + c612 + c05, protegido_(mensagem), chave];
+    const linha = [agora, protegido_(nome), vai, adultos, c612, c05, adultos + c612 + c05, protegido_(mensagem), chave, id];
 
-    // Mesma pessoa respondendo de novo? Atualiza a linha existente.
+    // Quem é quem: a ÚNICA forma de atualizar uma linha é reenviar o mesmo id (o aparelho de
+    // quem respondeu). O nome NUNCA decide: duas pessoas com o mesmo nome viram duas linhas.
     const ultima = aba.getLastRow();
     let alvo = 0;
-    if (ultima >= 2) {
-      const chaves = aba.getRange(2, COL.CHAVE, ultima - 1, 1).getValues();
-      for (let i = 0; i < chaves.length; i++) {
-        if (chaves[i][0] === chave) { alvo = i + 2; break; }
+    if (id && ultima >= 2) {
+      const ids = aba.getRange(2, COL.ID, ultima - 1, 1).getValues();
+      for (let i = 0; i < ids.length; i++) {
+        if (ids[i][0] === id) { alvo = i + 2; break; }
       }
     }
     const atualizou = alvo > 0;
     if (!atualizou) alvo = ultima + 1;
     aba.getRange(alvo, 1, 1, linha.length).setValues([linha]);
+
+    // Nomes iguais em linhas diferentes (homônimos ou a mesma pessoa em dois aparelhos): sinaliza.
+    atualizarAlertas_(aba);
 
     return json_({ ok: true, atualizou: atualizou });
   } catch (err) {
@@ -164,6 +176,25 @@ function formulasResumo_(variante) {
     ? `=SOMASE(Respostas!C:C${sep}"Sim"${sep}Respostas!${col}:${col})`
     : `=SUMIF(Respostas!C:C${sep}"Sim"${sep}Respostas!${col}:${col})`;
   return [contar('Sim'), contar('Não'), somar('D'), somar('E'), somar('F'), pt ? '=SOMA(B4:B6)' : '=SUM(B4:B6)'];
+}
+
+// ---------- alerta de nomes repetidos ----------
+
+/**
+ * Marca toda linha cujo nome (normalizado) aparece mais de uma vez: texto em "Atenção" e
+ * fundo laranja no nome. Quem decide é você: homônimos ficam as duas; a mesma pessoa em
+ * dois aparelhos, apague a linha mais antiga. Recalculado a cada resposta e no setup().
+ */
+function atualizarAlertas_(aba) {
+  const ultima = aba.getLastRow();
+  if (ultima < 2) return;
+  const n = ultima - 1;
+  const chaves = aba.getRange(2, COL.CHAVE, n, 1).getValues().map(l => String(l[0]));
+  const contagem = {};
+  chaves.forEach(k => { if (k) contagem[k] = (contagem[k] || 0) + 1; });
+  const repetida = chaves.map(k => !!k && contagem[k] > 1);
+  aba.getRange(2, COL.ATENCAO, n, 1).setValues(repetida.map(r => [r ? 'Nome repetido: conferir' : '']));
+  aba.getRange(2, COL.NOME, n, 1).setBackgrounds(repetida.map(r => [r ? COR_ALERTA : null]));
 }
 
 // ---------- utilitários ----------
