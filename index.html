@@ -169,7 +169,7 @@
   <img class="invite" src="assets/convite.jpg" width="800" height="1200"
        alt="Convite: Quartel do Bento, Brigada 03. Nosso pequeno herói está completando 3 anos! Sábado, 07/11, às 15h, no LIV Barra Funda, Salão de Festas Gourmet, Rua Tagipuru, 1060.">
 
-  <a class="cue" href="#rsvp">Confirmar presença <span aria-hidden="true">↓</span></a>
+  <a class="cue" href="#rsvp"><span id="cueTxt">Confirmar presença</span> <span aria-hidden="true">↓</span></a>
 
   <section class="card" id="rsvp" aria-labelledby="rsvp-title">
     <div id="formView">
@@ -256,6 +256,7 @@
       <a class="btn" id="btnGcal" href="#" target="_blank" rel="noopener">Abrir no Google Agenda</a>
       <a class="btn" id="btnMaps" href="#" target="_blank" rel="noopener">Ver no mapa</a>
       <button class="btn link" id="btnEdit" type="button">Alterar minha resposta</button>
+      <button class="btn link" id="btnOther" type="button">Responder por outra pessoa</button>
     </div>
   </section>
 
@@ -384,7 +385,10 @@
     el.submit.textContent = 'Enviando…';
     try {
       await enviar(payload);
-      try { localStorage.setItem(STORE, JSON.stringify({ ...payload, ...state, nome: v.nome })); } catch (_) {}
+      try {
+        const { hp, ...guardar } = payload; // guarda só o que foi enviado, sem o campo-armadilha
+        localStorage.setItem(STORE, JSON.stringify(guardar));
+      } catch (_) {}
       mostrarObrigado(payload);
     } catch (err) {
       console.error(err);
@@ -395,7 +399,7 @@
     }
   });
 
-  function mostrarObrigado(p) {
+  function mostrarObrigado(p, silencioso) {
     const sim = p.vai === 'Sim';
     const primeiro = p.nome.split(' ')[0];
     $('#thanksIcon').textContent = sim ? '🚒' : '💌';
@@ -405,21 +409,41 @@
       if (p.adultos) partes.push(plural(p.adultos, 'adulto', 'adultos'));
       if (p.criancas_6_12) partes.push(plural(p.criancas_6_12, 'criança de 6 a 12', 'crianças de 6 a 12'));
       if (p.criancas_0_5) partes.push(plural(p.criancas_0_5, 'criança de 0 a 5', 'crianças de 0 a 5'));
-      $('#thanksSummary').textContent = 'Anotamos: ' + partes.join(', ') + '.';
+      const pessoas = p.adultos + p.criancas_6_12 + p.criancas_0_5;
+      $('#thanksSummary').textContent = `Anotamos ${plural(pessoas, 'pessoa', 'pessoas')}: ${partes.join(', ')}.`;
     } else {
       $('#thanksSummary').textContent = 'Sentiremos sua falta, mas agradecemos o carinho. A mensagem chegou ao Bento!';
     }
     $('#thanksInfo').style.display = sim ? 'block' : 'none';
     ['#btnIcs', '#btnGcal', '#btnMaps'].forEach(s => $(s).style.display = sim ? 'block' : 'none');
+    $('#btnOther').textContent = `Não sou ${primeiro} · responder por outra pessoa`;
+    $('#cueTxt').textContent = sim ? 'Data, endereço e agenda' : 'Minha resposta';
     el.formView.style.display = 'none';
     el.thanks.style.display = 'block';
-    el.thanks.focus({ preventScroll: true });
-    $('#rsvp').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    if (!silencioso) {
+      el.thanks.focus({ preventScroll: true });
+      $('#rsvp').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
   }
 
   $('#btnEdit').addEventListener('click', () => {
+    $('#cueTxt').textContent = 'Confirmar presença';
     el.thanks.style.display = 'none';
     el.formView.style.display = 'block';
+    $('#rsvp').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+
+  // Celular compartilhado (casal, por exemplo): limpa e deixa responder por outra pessoa.
+  $('#btnOther').addEventListener('click', () => {
+    try { localStorage.removeItem(STORE); } catch (_) {}
+    Object.assign(state, { vai: null, adultos: 0, criancas6a12: 0, criancas0a5: 0 });
+    el.nome.value = ''; el.msgSim.value = ''; el.msgNao.value = '';
+    el.error.textContent = '';
+    render();
+    $('#cueTxt').textContent = 'Confirmar presença';
+    el.thanks.style.display = 'none';
+    el.formView.style.display = 'block';
+    el.nome.focus();
     $('#rsvp').scrollIntoView({ behavior: 'smooth', block: 'start' });
   });
 
@@ -447,19 +471,26 @@
   ].join('\r\n');
   $('#btnIcs').href = URL.createObjectURL(new Blob([ics], { type: 'text/calendar;charset=utf-8' }));
 
-  // ====== Reabrir com a resposta anterior (mesmo aparelho) ==================
+  // ====== Quem já respondeu abre direto na tela com o endereço ==============
+  // (guardado neste aparelho/navegador; "Alterar minha resposta" reabre o formulário)
+  let respondeu = null;
   try {
     const salvo = JSON.parse(localStorage.getItem(STORE) || 'null');
-    if (salvo && salvo.nome) {
+    if (salvo && salvo.nome && (salvo.vai === 'Sim' || salvo.vai === 'Não')) {
       el.nome.value = salvo.nome;
       state.vai = salvo.vai;
       state.adultos = salvo.adultos || 0;
       state.criancas6a12 = salvo.criancas_6_12 ?? salvo.criancas6a12 ?? 0;
       state.criancas0a5 = salvo.criancas_0_5 ?? salvo.criancas0a5 ?? 0;
       (salvo.vai === 'Sim' ? el.msgSim : el.msgNao).value = salvo.mensagem || '';
+      respondeu = {
+        nome: salvo.nome, vai: salvo.vai,
+        adultos: state.adultos, criancas_6_12: state.criancas6a12, criancas_0_5: state.criancas0a5
+      };
     }
   } catch (_) {}
   render();
+  if (respondeu) mostrarObrigado(respondeu, true);
 })();
 </script>
 </body>
