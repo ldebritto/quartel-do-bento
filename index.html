@@ -161,6 +161,24 @@
   .btn.link { border-color: transparent; color: var(--muted); text-decoration: underline; font-weight: 700; }
 
   footer { text-align: center; color: var(--muted); font-size: .85rem; margin-top: 22px; }
+
+  /* Tablet e computador: convite à esquerda (fixo ao rolar), formulário à direita */
+  @media (min-width: 720px) {
+    .wrap {
+      max-width: 1080px; padding: 32px 24px 48px;
+      display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
+      column-gap: 32px; align-items: start;
+    }
+    .invite {
+      grid-column: 1; grid-row: 1;
+      position: sticky; top: 24px;
+      width: auto; max-width: 100%; max-height: calc(100vh - 48px); /* nunca maior que a tela */
+      justify-self: center;
+    }
+    .cue { display: none; } /* os dois blocos já estão visíveis lado a lado */
+    .card { grid-column: 2; grid-row: 1; margin-top: 0; padding: 28px 26px 24px; }
+    footer { grid-column: 1 / -1; grid-row: 2; }
+  }
 </style>
 </head>
 <body>

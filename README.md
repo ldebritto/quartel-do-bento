@@ -53,6 +53,7 @@ Instale o app **Planilhas Google**, abra a planilha e fixe-a nos favoritos. Comp
 
 ## Comportamento
 
+- **Layout**: no celular, uma coluna (convite e, abaixo, o formulário). Em tablet na horizontal e computador (telas a partir de 720 px), duas colunas: convite à esquerda, fixo ao rolar, e formulário à direita.
 - **Nome → Sim/Não**: "Sim" abre os três contadores (adultos, crianças de 6 a 12, crianças de 0 a 5); "Não" abre o campo de mensagem.
 - **Quem já respondeu** (guardado no aparelho, via `localStorage`, sem cookies) abre o link direto na tela de agradecimento, com resumo, data, endereço, calendário e mapa. Há botões para alterar a resposta ou responder por outra pessoa (celular compartilhado). Em outro aparelho ou navegador, a página volta a mostrar o formulário.
 - **Resposta repetida**: quem enviar de novo com o mesmo nome (sem diferenciar maiúsculas e acentos) *atualiza* a linha, sem duplicar.
