@@ -25,8 +25,8 @@ function setup() {
   ss.setSpreadsheetTimeZone(FUSO);
 
   // --- Respostas ---
+  // Não limpa a aba: rodar setup() de novo nunca apaga respostas já recebidas.
   let r = ss.getSheetByName(ABA_RESPOSTAS) || ss.insertSheet(ABA_RESPOSTAS);
-  r.clear();
   r.getRange(1, 1, 1, CABECALHO.length).setValues([CABECALHO])
     .setFontWeight('bold').setBackground('#c8151b').setFontColor('#ffffff');
   r.setFrozenRows(1);
@@ -37,7 +37,7 @@ function setup() {
   r.setColumnWidth(COL.MSG, 320);
   r.hideColumns(COL.CHAVE);
   // Cores por resposta
-  const faixa = r.getRange(2, COL.NOME, 1000, 2);
+  const faixa = r.getRange(2, COL.NOME, Math.max(1, r.getMaxRows() - 1), 2);
   r.setConditionalFormatRules([
     SpreadsheetApp.newConditionalFormatRule()
       .whenFormulaSatisfied('=$C2="Sim"').setBackground('#e3f4e8').setRanges([faixa]).build(),

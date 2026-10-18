@@ -22,7 +22,7 @@ Convidado (WhatsApp) → github.io (página) → Apps Script → Planilha Google
 1. Crie uma planilha nova em [sheets.new](https://sheets.new) e dê o nome **Quartel do Bento – Confirmações**.
 2. Menu **Extensões → Apps Script**.
 3. Apague o conteúdo do editor e cole todo o `apps-script/Code.gs`. Salve.
-4. No seletor de funções (topo), escolha **`setup`** e clique em **Executar**. Autorize quando o Google pedir (aparece o aviso "app não verificado": *Avançado → Acessar … (não seguro)*; o script é seu). Isso cria as abas **Resumo** e **Respostas**.
+4. No seletor de funções (topo), escolha **`setup`** e clique em **Executar**. Autorize quando o Google pedir (aparece o aviso "app não verificado": *Avançado → Acessar … (não seguro)*; o script é seu). Isso cria as abas **Resumo** e **Respostas**. É seguro rodar de novo: as respostas já recebidas não são apagadas.
 5. **Implantar → Nova implantação → Tipo: App da Web**
    - Executar como: **Eu**
    - Quem pode acessar: **Qualquer pessoa**
