@@ -255,6 +255,7 @@
       <a class="btn primary" id="btnIcs" href="#" download="festa-do-bento.ics">Adicionar ao calendário</a>
       <a class="btn" id="btnGcal" href="#" target="_blank" rel="noopener">Abrir no Google Agenda</a>
       <a class="btn" id="btnMaps" href="#" target="_blank" rel="noopener">Ver no mapa</a>
+      <a class="btn" id="btnGift" href="https://www.amazon.com.br/hz/wishlist/ls/30U6OOTE3YWBG?ref_=wl_share" target="_blank" rel="noopener">🎁 Ideias de presentes</a>
       <button class="btn link" id="btnEdit" type="button">Alterar minha resposta</button>
       <button class="btn link" id="btnOther" type="button">Responder por outra pessoa</button>
     </div>
@@ -415,7 +416,7 @@
       $('#thanksSummary').textContent = 'Sentiremos sua falta, mas agradecemos o carinho. A mensagem chegou ao Bento!';
     }
     $('#thanksInfo').style.display = sim ? 'block' : 'none';
-    ['#btnIcs', '#btnGcal', '#btnMaps'].forEach(s => $(s).style.display = sim ? 'block' : 'none');
+    ['#btnIcs', '#btnGcal', '#btnMaps', '#btnGift'].forEach(s => $(s).style.display = sim ? 'block' : 'none');
     $('#btnOther').textContent = `Não sou ${primeiro} · responder por outra pessoa`;
     $('#cueTxt').textContent = sim ? 'Data, endereço e agenda' : 'Minha resposta';
     el.formView.style.display = 'none';
